@@ -1,0 +1,32 @@
+apiVersion: platform.confluent.io/v1beta1
+kind: SchemaRegistry
+metadata:
+  name: schemaregistry
+  namespace: confluent
+spec:
+  replicas: 1
+  image:
+    application: confluentinc/cp-schema-registry:7.9.0
+    init: confluentinc/confluent-init-container:2.11.0
+  podTemplate:
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "2Gi"
+        cpu: "1"
+  dependencies:
+    kafka:
+      bootstrapEndpoint: kafka.confluent.svc.cluster.local:9092
+  
+  configOverrides:
+    server:
+      # Increase session timeout to handle slow responses
+      - kafkastore.timeout.ms=60000
+      - kafkastore.init.timeout.ms=120000
+      - leader.eligibility=true
+      # Consumer group settings
+      - kafkastore.group.instance.id=schema-registry-1
+      - kafkastore.heartbeat.interval.ms=3000
+      - kafkastore.session.timeout.ms=60000
